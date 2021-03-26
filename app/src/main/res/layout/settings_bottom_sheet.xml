@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bottom_sheet_background">
+
+        <View
+            android:id="@+id/pane"
+            android:layout_width="50dp"
+            android:layout_height="6dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bottom_sheet_pane_background"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/clock_text_view_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="48dp"
+            android:fontFamily="@font/gilroy_regular"
+            android:text="Clock Mode"
+            android:textColor="@color/white"
+            app:layout_constraintStart_toStartOf="@id/clock_text_view"
+            app:layout_constraintBottom_toTopOf="@id/clock_text_view"
+            app:layout_constraintTop_toBottomOf="@id/pane"/>
+
+        <TextView
+            android:id="@+id/clock_text_view"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:paddingTop="20dp"
+            android:paddingBottom="20dp"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:textColor="@color/white"
+            android:background="@drawable/option_text_view_background"
+            android:fontFamily="@font/gilroy_semi_bold"
+            android:textSize="16sp"
+            android:text="Sudden Death"
+            android:drawableEnd="@drawable/dropdown_icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/clock_text_view_label" />
+
+        <TextView
+            android:id="@+id/time_text_view_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="48dp"
+            android:fontFamily="@font/gilroy_regular"
+            android:text="Time"
+            android:textColor="@color/white"
+            app:layout_constraintStart_toStartOf="@id/time_text_view"
+            app:layout_constraintBottom_toTopOf="@id/time_text_view"
+            app:layout_constraintTop_toBottomOf="@id/clock_text_view"/>
+
+        <TextView
+            android:id="@+id/increment_text_view"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:paddingTop="20dp"
+            android:paddingBottom="20dp"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:textColor="@color/white"
+            android:background="@drawable/option_text_view_background"
+            android:fontFamily="@font/gilroy_semi_bold"
+            android:textSize="16sp"
+            android:text="2 secs"
+            android:drawableEnd="@drawable/dropdown_icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/increment_text_view_label" />
+
+        <TextView
+            android:id="@+id/increment_text_view_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="48dp"
+            android:fontFamily="@font/gilroy_regular"
+            android:text="Increment"
+            android:textColor="@color/white"
+            app:layout_constraintStart_toStartOf="@id/increment_text_view"
+            app:layout_constraintBottom_toTopOf="@id/increment_text_view"
+            app:layout_constraintTop_toBottomOf="@id/time_text_view"/>
+
+        <TextView
+            android:id="@+id/time_text_view"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:paddingTop="20dp"
+            android:paddingBottom="20dp"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:textColor="@color/white"
+            android:background="@drawable/option_text_view_background"
+            android:fontFamily="@font/gilroy_semi_bold"
+            android:textSize="16sp"
+            android:text="5 mins"
+            android:drawableEnd="@drawable/dropdown_icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/time_text_view_label" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="55dp"
+            android:layout_marginTop="6dp"
+            android:alpha="0.4"
+            android:background="@drawable/primary_button"
+            app:layout_constraintEnd_toEndOf="@id/action_button"
+            app:layout_constraintStart_toStartOf="@id/action_button"
+            app:layout_constraintTop_toTopOf="@id/action_button" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/action_button"
+            android:layout_width="0dp"
+            android:layout_height="55dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="90dp"
+            android:layout_marginBottom="48dp"
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/primary_button"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/increment_text_view">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/gilroy_medium"
+                android:text="Set Clock"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
