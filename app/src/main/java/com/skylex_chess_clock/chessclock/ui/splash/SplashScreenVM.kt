@@ -1,10 +1,10 @@
-package com.skylex_chess_clock.chessclock.viewmodels
+package com.skylex_chess_clock.chessclock.ui.splash
 
 
-import android.util.Log
+
 import com.skylex_chess_clock.chessclock.R
-import com.skylex_chess_clock.chessclock.viewmodels.SplashScreenVM.*
-import com.skylex_chess_clock.chessclock.viewmodels.SplashScreenVM.ViewNavigation.*
+import com.skylex_chess_clock.chessclock.ui.splash.SplashScreenVM.*
+import com.skylex_chess_clock.chessclock.ui.splash.SplashScreenVM.ViewNavigation.*
 import com.skylex_chess_clock.news_feed.util.MviViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
@@ -15,25 +15,20 @@ class SplashScreenVM : MviViewModel<Any, ViewEffect, ViewNavigation, Event, Any>
 
 
     override fun reduceToViewState(stateChange: Any) {
-        TODO("Not yet implemented")
+        // No implementation
     }
 
 
     override fun process(viewEvent: Event) {
-        Log.d(TAG, "process: called")
         when(viewEvent) {
             is Event.PageActive -> handlePageActiveEvent()
         }
     }
     private fun handlePageActiveEvent() {
-        Log.d(TAG, "handlePageActiveEvent: called")
         firstLoadOccurred = true
         disposables.add(
             Observable.timer(3, TimeUnit.SECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnSubscribe {
-
-                }
                 .subscribe {
                     viewNavigation = NavigateToFragment(R.id.homeFragment)
                 }

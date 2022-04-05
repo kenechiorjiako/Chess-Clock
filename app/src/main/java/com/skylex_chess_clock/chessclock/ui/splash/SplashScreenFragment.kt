@@ -1,8 +1,7 @@
-package com.skylex_chess_clock.chessclock.ui
+package com.skylex_chess_clock.chessclock.ui.splash
 
 import android.animation.AnimatorSet
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,9 +12,8 @@ import androidx.navigation.fragment.NavHostFragment
 import com.skylex_chess_clock.chessclock.R
 import com.skylex_chess_clock.chessclock.databinding.FragmentSplashScreenBinding
 import com.skylex_chess_clock.chessclock.util.AnimationUtil
-import com.skylex_chess_clock.chessclock.viewmodels.SplashScreenVM
-import com.skylex_chess_clock.chessclock.viewmodels.SplashScreenVM.*
-import com.skylex_chess_clock.chessclock.viewmodels.SplashScreenVM.ViewNavigation.*
+import com.skylex_chess_clock.chessclock.ui.splash.SplashScreenVM.*
+import com.skylex_chess_clock.chessclock.ui.splash.SplashScreenVM.ViewNavigation.*
 import com.skylex_chess_clock.news_feed.util.MviFragment
 
 class SplashScreenFragment() : MviFragment<Any, ViewEffect, ViewNavigation, Event, Any, SplashScreenVM>() {
@@ -63,7 +61,6 @@ class SplashScreenFragment() : MviFragment<Any, ViewEffect, ViewNavigation, Even
         }
     }
     private fun navigateToFragment(pageId: Int) {
-        Log.d(TAG, "navigateToFragment: called")
         val navOptions: NavOptions = NavOptions.Builder()
                 .setPopUpTo(R.id.splashScreenFragment, true)
                 .setEnterAnim(android.R.anim.fade_in)
@@ -74,7 +71,6 @@ class SplashScreenFragment() : MviFragment<Any, ViewEffect, ViewNavigation, Even
 
 
     override fun dispatchLoadPageEvent() {
-        Log.d(TAG, "dispatchLoadPageEvent: called")
         mEvents.onNext(Event.PageActive)
     }
 

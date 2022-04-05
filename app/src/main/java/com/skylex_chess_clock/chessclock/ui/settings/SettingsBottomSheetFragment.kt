@@ -1,4 +1,4 @@
-package com.skylex_chess_clock.chessclock.ui
+package com.skylex_chess_clock.chessclock.ui.settings
 
 import android.app.Dialog
 import android.os.Bundle

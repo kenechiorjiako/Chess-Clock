@@ -1,4 +1,4 @@
-package com.skylex_chess_clock.chessclock.ui
+package com.skylex_chess_clock.chessclock.ui.home
 
 import android.annotation.SuppressLint
 import android.media.MediaPlayer
@@ -14,13 +14,13 @@ import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.viewModels
 import com.skylex_chess_clock.chessclock.*
 import com.skylex_chess_clock.chessclock.databinding.FragmentHomeBinding
+import com.skylex_chess_clock.chessclock.ui.settings.SettingsBottomSheetFragment
 import com.skylex_chess_clock.chessclock.util.TimeHelper
 import com.skylex_chess_clock.chessclock.util.TopLevelFiles.Companion.ClockMode
-import com.skylex_chess_clock.chessclock.viewmodels.HomeFragmentVM
-import com.skylex_chess_clock.chessclock.viewmodels.HomeFragmentVM.*
-import com.skylex_chess_clock.chessclock.viewmodels.HomeFragmentVM.Companion.NO_PLAYER
-import com.skylex_chess_clock.chessclock.viewmodels.HomeFragmentVM.Companion.PLAYER_ONE
-import com.skylex_chess_clock.chessclock.viewmodels.HomeFragmentVM.Companion.PLAYER_TWO
+import com.skylex_chess_clock.chessclock.ui.home.HomeFragmentVM.*
+import com.skylex_chess_clock.chessclock.ui.home.HomeFragmentVM.Companion.NO_PLAYER
+import com.skylex_chess_clock.chessclock.ui.home.HomeFragmentVM.Companion.PLAYER_ONE
+import com.skylex_chess_clock.chessclock.ui.home.HomeFragmentVM.Companion.PLAYER_TWO
 import com.skylex_chess_clock.news_feed.util.MviFragment
 import dagger.hilt.android.AndroidEntryPoint
 import org.parceler.Parcels
@@ -106,7 +106,8 @@ class HomeFragment : MviFragment<ViewState, ViewEffect, ViewNavigation, Event, P
     }
 
     private fun observeFragmentResults() {
-        childFragmentManager.setFragmentResultListener(SettingsBottomSheetFragment.RESULT_KEY,
+        childFragmentManager.setFragmentResultListener(
+            SettingsBottomSheetFragment.RESULT_KEY,
             viewLifecycleOwner,
             FragmentResultListener { requestKey , result ->
                 val clockMode: ClockMode = result.getSerializable(CLOCK_MODE_RESULT_KEY) as ClockMode

@@ -11,7 +11,7 @@
         android:background="@color/color_primary_darkest"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".ui.HomeFragment">
+        tools:context=".ui.home.HomeFragment">
 
         <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/app_bar"

@@ -1,4 +1,4 @@
-package com.skylex_chess_clock.chessclock.viewmodels
+package com.skylex_chess_clock.chessclock.ui.home
 
 import android.os.Bundle
 import android.util.Log
@@ -11,9 +11,9 @@ import com.skylex_chess_clock.chessclock.*
 import com.skylex_chess_clock.chessclock.util.PreferenceKeys
 import com.skylex_chess_clock.chessclock.util.TimeHelper
 import com.skylex_chess_clock.chessclock.util.TopLevelFiles.Companion.ClockMode
-import com.skylex_chess_clock.chessclock.viewmodels.HomeFragmentVM.*
-import com.skylex_chess_clock.chessclock.viewmodels.HomeFragmentVM.Event.*
-import com.skylex_chess_clock.chessclock.viewmodels.HomeFragmentVM.PartialStateChange.*
+import com.skylex_chess_clock.chessclock.ui.home.HomeFragmentVM.*
+import com.skylex_chess_clock.chessclock.ui.home.HomeFragmentVM.Event.*
+import com.skylex_chess_clock.chessclock.ui.home.HomeFragmentVM.PartialStateChange.*
 import com.skylex_chess_clock.news_feed.util.MviViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
