@@ -51,18 +51,19 @@ class TopLevelFiles {
                 TimeHelper(180, TimeUnit.SECONDS)
         )
 
-        enum class ClockMode {
-            Sudden_Death,
-            Increment,
-            Simple_Delay,
-            Hourglass;
+        enum class ClockMode(name: String) {
+            SUDDEN_DEATH("Sudden Death"),
+            INCREMENT("Increment"),
+            SIMPLE_DELAY("Simple Delay"),
+            HOURGLASS("Hourglass"),
+            UNDEFINED("");
 
             override fun toString(): String {
-                return name.replace("_", " ")
+                return name
             }
             companion object {
                 fun getAllModes(): List<ClockMode> {
-                    return listOf(Sudden_Death, Increment, Simple_Delay, Hourglass)
+                    return listOf(SUDDEN_DEATH, INCREMENT, SIMPLE_DELAY, HOURGLASS)
                 }
                 fun getClockModeFromName(name: String): ClockMode {
                     getAllModes().forEach {
@@ -70,7 +71,7 @@ class TopLevelFiles {
                             return it
                         }
                     }
-                    return Sudden_Death
+                    return UNDEFINED
                 }
             }
         }

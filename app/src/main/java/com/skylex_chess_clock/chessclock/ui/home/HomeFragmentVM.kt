@@ -1,10 +1,9 @@
 package com.skylex_chess_clock.chessclock.ui.home
 
 import android.os.Bundle
-import android.util.Log
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
-import androidx.hilt.Assisted
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.skylex_chess_clock.chessclock.*
@@ -15,87 +14,64 @@ import com.skylex_chess_clock.chessclock.ui.home.HomeFragmentVM.*
 import com.skylex_chess_clock.chessclock.ui.home.HomeFragmentVM.Event.*
 import com.skylex_chess_clock.chessclock.ui.home.HomeFragmentVM.PartialStateChange.*
 import com.skylex_chess_clock.news_feed.util.MviViewModel
+import dagger.assisted.Assisted
+import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
-class HomeFragmentVM @ViewModelInject constructor(
-        @Assisted savedStateHandle: SavedStateHandle,
-) : MviViewModel<ViewState, ViewEffect, ViewNavigation, Event, PartialStateChange>(){
+@HiltViewModel
+class HomeFragmentVM @Inject constructor(
+    private val savedStateHandle: SavedStateHandle,
+    private val dataStore: DataStore<Preferences>
+) : MviViewModel<ViewState, ViewEffect, ViewNavigation, Event, PartialStateChange>() {
 
-    private val clockTimeObservable : Observable<Long>?
-    private val playerTwoTimeObservable : Observable<Long>?
-
-    private var currentTime: TimeHelper? = null
-    private var currentClockMode: ClockMode? = null
-    private var currentTimeIncrement: TimeHelper? = null
+    private lateinit var currentClockMode: ClockMode
+    private lateinit var currentTime: TimeHelper
+    private lateinit var currentTimeIncrement: TimeHelper
     private var clockActivated: Long = 0
 
     init {
-        viewState = ViewState(playerOneTime = 20, playerTwoTime = 20)
+        viewState = ViewState()
 
-        clockTimeObservable = Observable.interval(1, TimeUnit.SECONDS, Schedulers.io())
+        disposables.add(
+            Observable.interval(TIME_INCREMENT, TimeUnit.SECONDS, Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-
-        playerTwoTimeObservable = Observable.interval(1, TimeUnit.SECONDS, Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-
-        disposables.addAll(
-            clockTimeObservable.subscribe {
-                changeClockTimes()
-            }
-
-//            playerTwoTimeObservable.subscribe {
-//                Log.d(TAG, "observing 2")
-//                if (viewState.clockActive && viewState.activePlayer == PLAYER_TWO && viewState.playerTwoTime != 0L) {
-//                    Log.d(Companion.TAG, "observing player two time change")
-//                    reduceToViewState(PlayerTimeChange(PLAYER_TWO, viewState.playerTwoTime - 1))
-//                }
-//            },
+                .subscribe {
+                    changeClockTimes()
+                }
         )
 
-        MyApplication.dataStore.data.map {
-            preferences ->
-            val timeString = preferences[PreferenceKeys.timeHelperPreferenceKey] ?: TimeHelper.TimeHelperPreferencesConverter.serialize(
+        dataStore.data
+            .onEach{ preferences ->
+                val currentTimePreference = preferences[PreferenceKeys.timeHelperPreferenceKey] ?: TimeHelper.TimeHelperPreferencesConverter.serialize(
                     TimeHelper(5, TimeUnit.MINUTES)
-            )
-            return@map TimeHelper.TimeHelperPreferencesConverter.deserialize(timeString)
-        }.take(count = 1).onEach {
-            currentTime = it
-            reduceToViewState(PlayerTimeChange(PLAYER_ONE, currentTime?.timeUnit?.toSeconds(currentTime?.time!!)!!))
-            reduceToViewState(PlayerTimeChange(PLAYER_TWO, currentTime?.timeUnit?.toSeconds(currentTime?.time!!)!!))
-        }.launchIn(viewModelScope)
+                )
+                currentTime = TimeHelper.TimeHelperPreferencesConverter.deserialize(currentTimePreference)
+                reduceToViewState(PlayerTimeChange(PLAYER_ONE, currentTime.toSeconds()))
+                reduceToViewState(PlayerTimeChange(PLAYER_TWO, currentTime.toSeconds()))
 
-        MyApplication.dataStore.data.map {
-            preferences ->
-            val timeString = preferences[PreferenceKeys.timeIncrementPreferenceKey] ?: TimeHelper.TimeHelperPreferencesConverter.serialize(
-                    TimeHelper(2, TimeUnit.SECONDS)
-            )
-            return@map TimeHelper.TimeHelperPreferencesConverter.deserialize(timeString)
-        }.take(count = 1).onEach {
-            currentTimeIncrement = it
-        }.launchIn(viewModelScope)
 
-        MyApplication.dataStore.data.map {
-            preferences ->
-            val clockModeString = preferences[PreferenceKeys.clockModePreferenceKey] ?: ClockMode.Sudden_Death.name
-            return@map ClockMode.getClockModeFromName(clockModeString)
-        }.onEach {
-            currentClockMode = it
+
+                val timeIncrementPreference = preferences[PreferenceKeys.timeIncrementPreferenceKey] ?: TimeHelper.TimeHelperPreferencesConverter.serialize(TimeHelper(2, TimeUnit.SECONDS))
+                currentTimeIncrement = TimeHelper.TimeHelperPreferencesConverter.deserialize(timeIncrementPreference)
+
+                val clockModePreference = preferences[PreferenceKeys.clockModePreferenceKey] ?: ClockMode.SUDDEN_DEATH.name
+                currentClockMode = ClockMode.getClockModeFromName(clockModePreference)
+
         }.launchIn(viewModelScope)
     }
 
     override fun reduceToViewState(stateChange: PartialStateChange) {
         viewState = when (stateChange) {
             is PlayerTimeChange -> {
-                if (stateChange.player == PLAYER_ONE) {
-                    viewState.copy(playerOneTime = stateChange.time)
-                } else {
-                    viewState.copy(playerTwoTime = stateChange.time)
-                }
+                viewState.copy(playerTimes = viewState.playerTimes.also {
+                    it[stateChange.player] = stateChange.time
+                })
             }
             is ActivePlayerChange -> {
                 viewState.copy(activePlayer = stateChange.activePlayer)
@@ -108,7 +84,7 @@ class HomeFragmentVM @ViewModelInject constructor(
 
     override fun process(viewEvent: Event) {
         when (viewEvent) {
-            is PlayerClockClicked -> handlePlayerClockClicked(viewEvent.player)
+            is PlayerClockTouched -> handlePlayerClockClicked(viewEvent.player)
             is RefreshClocks -> handleRefreshClocks()
             is PlayButtonClicked -> handlePlayButtonClicked()
             is PauseButtonClicked -> handlePauseButtonClicked()
@@ -119,51 +95,58 @@ class HomeFragmentVM @ViewModelInject constructor(
 
 
     private fun handlePlayerClockClicked(player: Int) {
-        if (viewState.playerOneTime != 0L && viewState.playerTwoTime != 0L) {
+        if (!viewState.gameOver()) {
             if (viewState.clockActive) {
                 if (player == viewState.activePlayer) {
-                    viewEffect = ViewEffect.PlayClockClickSound
-                    stopClock(player)
-                    if (player != PLAYER_TWO) {
-                        startClock(PLAYER_TWO)
-                        reduceToViewState(ActivePlayerChange(PLAYER_TWO))
-                    } else {
-                        startClock(PLAYER_ONE)
-                        reduceToViewState(ActivePlayerChange(PLAYER_ONE))
+
+                    when(player) {
+                        PLAYER_ONE -> {
+                            changeActivePlayer(
+                                currentPlayer = PLAYER_ONE,
+                                newPlayer = PLAYER_TWO,
+                                playSound = true,
+                                incrementCurrentPlayerTime = true
+                            )
+                        }
+                        PLAYER_TWO -> {
+                            changeActivePlayer(
+                                currentPlayer = PLAYER_TWO,
+                                newPlayer = PLAYER_ONE,
+                                playSound = true,
+                                incrementCurrentPlayerTime = true
+                            )
+                        }
                     }
+
                 }
-            } else {
-                if (viewState.activePlayer == NO_PLAYER) {
-                    viewEffect = ViewEffect.PlayClockClickSound
-                    reduceToViewState(ClockActivityChange(true))
-                    if (player == PLAYER_ONE) {
-                        startClock(PLAYER_TWO)
-                        reduceToViewState(ActivePlayerChange(PLAYER_TWO))
-                    } else {
-                        startClock(PLAYER_ONE)
-                        reduceToViewState(ActivePlayerChange(PLAYER_ONE))
+            } else if (viewState.activePlayer == NO_PLAYER || viewState.activePlayer == player) {
+                reduceToViewState(ClockActivityChange(true))
+                when(player) {
+                    PLAYER_ONE -> {
+                        changeActivePlayer(
+                            currentPlayer = PLAYER_ONE,
+                            newPlayer = PLAYER_TWO,
+                            playSound = true,
+                            incrementCurrentPlayerTime = false
+                        )
                     }
-                } else if (player == viewState.activePlayer) {
-                    viewEffect = ViewEffect.PlayClockClickSound
-                    reduceToViewState(ClockActivityChange(true))
-                    if (player == PLAYER_ONE) {
-                        startClock(PLAYER_TWO)
-                        reduceToViewState(ActivePlayerChange(PLAYER_TWO))
-                    } else {
-                        startClock(PLAYER_ONE)
-                        reduceToViewState(ActivePlayerChange(PLAYER_ONE))
+                    PLAYER_TWO -> {
+                        changeActivePlayer(
+                            currentPlayer = PLAYER_TWO,
+                            newPlayer = PLAYER_ONE,
+                            playSound = true,
+                            incrementCurrentPlayerTime = false
+                        )
                     }
                 }
             }
         }
     }
     private fun handleRefreshClocks() {
-        if (currentTime != null) {
-            reduceToViewState(PlayerTimeChange(PLAYER_ONE, currentTime?.timeUnit?.toSeconds(currentTime?.time!!)!!))
-            reduceToViewState(PlayerTimeChange(PLAYER_TWO, currentTime?.timeUnit?.toSeconds(currentTime?.time!!)!!))
-            reduceToViewState(ActivePlayerChange(NO_PLAYER))
-            reduceToViewState(ClockActivityChange(false))
-        }
+        reduceToViewState(PlayerTimeChange(PLAYER_ONE, currentTime.toSeconds()))
+        reduceToViewState(PlayerTimeChange(PLAYER_TWO, currentTime.toSeconds()))
+        reduceToViewState(ActivePlayerChange(NO_PLAYER))
+        reduceToViewState(ClockActivityChange(false))
     }
     private fun handlePlayButtonClicked() {
         reduceToViewState(ClockActivityChange(true))
@@ -172,19 +155,13 @@ class HomeFragmentVM @ViewModelInject constructor(
         reduceToViewState(ClockActivityChange(false))
     }
     private fun handleSettingsChangeEvent(clockMode: ClockMode, time: TimeHelper, increment: TimeHelper) {
-        Log.d(TAG, "handleSettingsChangeEvent: got result for clock mode -> $clockMode")
-        Log.d(TAG, "handleSettingsChangeEvent: got result for time of $time")
         viewModelScope.launch {
-            MyApplication.dataStore.edit {
-                    preferences ->
+            dataStore.edit { preferences ->
                 preferences[PreferenceKeys.timeHelperPreferenceKey] = TimeHelper.TimeHelperPreferencesConverter.serialize(time)
                 preferences[PreferenceKeys.timeIncrementPreferenceKey] = TimeHelper.TimeHelperPreferencesConverter.serialize(increment)
                 preferences[PreferenceKeys.clockModePreferenceKey] = clockMode.name
             }
         }
-        currentTime = time
-        currentClockMode = clockMode
-        currentTimeIncrement = increment
         handleRefreshClocks()
     }
     private fun handleSettingsButtonClicked() {
@@ -198,97 +175,72 @@ class HomeFragmentVM @ViewModelInject constructor(
 
 
     private fun changeClockTimes() {
-        if (viewState.clockActive) {
-
-//            when(currentClockMode) {
-//                ClockMode.Sudden_Death -> {
-//                    if (viewState.activePlayer == PLAYER_ONE && viewState.playerOneTime != 0L) {
-//                        reduceToViewState(PlayerTimeChange(PLAYER_ONE, viewState.playerOneTime - 1))
-//                    } else if (viewState.activePlayer == PLAYER_TWO && viewState.playerTwoTime != 0L) {
-//                        reduceToViewState(PlayerTimeChange(PLAYER_TWO, viewState.playerTwoTime - 1))
-//                    }
-//                }
-//                ClockMode.Increment -> {
-//                    if (viewState.activePlayer == PLAYER_ONE && viewState.playerOneTime != 0L) {
-//                        reduceToViewState(PlayerTimeChange(PLAYER_ONE, viewState.playerOneTime - 1))
-//                    } else if (viewState.activePlayer == PLAYER_TWO && viewState.playerTwoTime != 0L) {
-//                        reduceToViewState(PlayerTimeChange(PLAYER_TWO, viewState.playerTwoTime - 1))
-//                    }
-//                }
-//                ClockMode.Hourglass -> {
-//                    if (viewState.activePlayer == PLAYER_ONE && viewState.playerOneTime != 0L) {
-//                        reduceToViewState(PlayerTimeChange(PLAYER_ONE, viewState.playerOneTime - 1))
-//                        reduceToViewState(PlayerTimeChange(PLAYER_TWO, viewState.playerTwoTime + 1))
-//                    } else if (viewState.activePlayer == PLAYER_TWO && viewState.playerTwoTime != 0L) {
-//                        reduceToViewState(PlayerTimeChange(PLAYER_TWO, viewState.playerTwoTime - 1))
-//                        reduceToViewState(PlayerTimeChange(PLAYER_ONE, viewState.playerOneTime + 1))
-//                    }
-//                }
-//                ClockMode.Simple_Delay -> {
-//                    if (System.currentTimeMillis() - clockActivated >= SIMPLE_DELAY_MILLIS) {
-//                        if (viewState.activePlayer == PLAYER_ONE && viewState.playerOneTime != 0L) {
-//                            reduceToViewState(PlayerTimeChange(PLAYER_ONE, viewState.playerOneTime - 1))
-//                        } else if (viewState.activePlayer == PLAYER_TWO && viewState.playerTwoTime != 0L) {
-//                            reduceToViewState(PlayerTimeChange(PLAYER_TWO, viewState.playerTwoTime - 1))
-//                        }
-//                    }
-//                }
-//            }
-
-            if (currentClockMode == ClockMode.Sudden_Death || currentClockMode == ClockMode.Increment || currentClockMode == ClockMode.Simple_Delay) {
-                if (currentClockMode == ClockMode.Simple_Delay && (System.currentTimeMillis() - clockActivated < SIMPLE_DELAY_MILLIS)) {
-                    return
-                } else {
-                    if (viewState.activePlayer == PLAYER_ONE && viewState.playerOneTime != 0L) {
-                        reduceToViewState(PlayerTimeChange(PLAYER_ONE, viewState.playerOneTime - 1))
-                        if (viewState.playerOneTime == 0L) {
-                            viewEffect = ViewEffect.PlayClockTimeoutSound
-                        }
-                    } else if (viewState.activePlayer == PLAYER_TWO && viewState.playerTwoTime != 0L) {
-                        reduceToViewState(PlayerTimeChange(PLAYER_TWO, viewState.playerTwoTime - 1))
-                        if (viewState.playerTwoTime == 0L) {
-                            viewEffect = ViewEffect.PlayClockTimeoutSound
-                        }
+        if (viewState.clockActive && viewState.activePlayer != NO_PLAYER) {
+            when(currentClockMode) {
+                ClockMode.SUDDEN_DEATH,
+                ClockMode.INCREMENT -> {
+                    decreasePlayerTime(viewState.activePlayer)
+                }
+                ClockMode.SIMPLE_DELAY -> {
+                    if (System.currentTimeMillis() - clockActivated < SIMPLE_DELAY_MILLIS) {
+                        return
+                    } else {
+                        decreasePlayerTime(viewState.activePlayer)
                     }
                 }
-            } else if (currentClockMode == ClockMode.Hourglass) {
-                if (viewState.activePlayer == PLAYER_ONE && viewState.playerOneTime != 0L) {
-                    reduceToViewState(PlayerTimeChange(PLAYER_ONE, viewState.playerOneTime - 1))
-                    reduceToViewState(PlayerTimeChange(PLAYER_TWO, viewState.playerTwoTime + 1))
-                    if (viewState.playerOneTime == 0L) {
-                        viewEffect = ViewEffect.PlayClockTimeoutSound
-                    }
-                } else if (viewState.activePlayer == PLAYER_TWO && viewState.playerTwoTime != 0L) {
-                    reduceToViewState(PlayerTimeChange(PLAYER_TWO, viewState.playerTwoTime - 1))
-                    reduceToViewState(PlayerTimeChange(PLAYER_ONE, viewState.playerOneTime + 1))
-                    if (viewState.playerTwoTime == 0L) {
-                        viewEffect = ViewEffect.PlayClockTimeoutSound
+                ClockMode.HOURGLASS -> {
+                    if (viewState.playerTimes.getValue(viewState.activePlayer) > NO_TIME) {
+                        if (viewState.activePlayer == PLAYER_ONE) {
+                            decreasePlayerTime(PLAYER_ONE)
+                            increasePlayerTime(PLAYER_TWO)
+                        } else if (viewState.activePlayer == PLAYER_TWO) {
+                            decreasePlayerTime(PLAYER_TWO)
+                            increasePlayerTime(PLAYER_ONE)
+                        }
                     }
                 }
             }
         }
     }
-    private fun startClock(player: Int) {
+    private fun decreasePlayerTime(player: Int) {
+        val currentPlayerTime = viewState.playerTimes.getValue(player)
+        if (currentPlayerTime > NO_TIME) {
+            reduceToViewState(PlayerTimeChange(player, currentPlayerTime - TIME_INCREMENT))
+            if (viewState.playerTimes.getValue(player) == NO_TIME) {
+                viewEffect = ViewEffect.PlayClockTimeoutSound
+            }
+        }
+    }
+    private fun increasePlayerTime(player: Int) {
+        reduceToViewState(PlayerTimeChange(player, viewState.playerTimes.getValue(player) + TIME_INCREMENT))
+    }
+    private fun incrementPlayerTime(player: Int) {
+        val timeIncrementInSeconds = currentTimeIncrement.toSeconds()
+        val currentPlayerTime = viewState.playerTimes.getValue(player)
+
+        if (currentClockMode == ClockMode.INCREMENT || currentClockMode == ClockMode.SIMPLE_DELAY) {
+            reduceToViewState(PlayerTimeChange(player, currentPlayerTime + timeIncrementInSeconds))
+        }
+    }
+    private fun changeActivePlayer(currentPlayer: Int, newPlayer: Int, playSound: Boolean, incrementCurrentPlayerTime: Boolean) {
+        if (playSound) viewEffect =  ViewEffect.PlayClockClickSound
+        if (incrementCurrentPlayerTime) {
+            incrementPlayerTime(currentPlayer)
+        }
         clockActivated = System.currentTimeMillis()
+        reduceToViewState(ActivePlayerChange(newPlayer))
     }
-    private fun stopClock(player: Int) {
-        val timeIncrementInSeconds : Long = currentTimeIncrement?.timeUnit?.toSeconds(currentTimeIncrement?.time!!)?: 0
-        if (currentClockMode == ClockMode.Increment || currentClockMode == ClockMode.Simple_Delay) {
-            if (player == PLAYER_ONE) {
-                reduceToViewState(PlayerTimeChange(player, viewState.playerOneTime + timeIncrementInSeconds))
-            } else if (player == PLAYER_TWO) {
-                reduceToViewState(PlayerTimeChange(player, viewState.playerTwoTime + timeIncrementInSeconds))
-            }
-        }
-    }
+
+
 
 
     data class ViewState(
-            val playerOneTime: Long = 300,
-            val playerTwoTime: Long = 300,
-            val activePlayer: Int = NO_PLAYER,
-            val clockActive: Boolean = false
-    ) {}
+        val playerTimes: HashMap<Int, Long> = hashMapOf(Pair(PLAYER_ONE, 300), Pair(PLAYER_TWO, 300)),
+        val activePlayer: Int = NO_PLAYER,
+        val clockActive: Boolean = false
+    ) {
+        fun gameOver(): Boolean = playerTimes.getValue(PLAYER_ONE) == NO_TIME || playerTimes.getValue(PLAYER_TWO) == NO_TIME
+    }
     sealed class ViewEffect {
         object PlayClockClickSound: ViewEffect()
         object PlayClockTimeoutSound: ViewEffect()
@@ -302,7 +254,7 @@ class HomeFragmentVM @ViewModelInject constructor(
         data class ClockActivityChange(val clockActive: Boolean) : PartialStateChange()
     }
     sealed class Event {
-        data class PlayerClockClicked(val player: Int) : Event()
+        data class PlayerClockTouched(val player: Int) : Event()
         object RefreshClocks : Event()
         object PlayButtonClicked : Event()
         object PauseButtonClicked : Event()
@@ -315,7 +267,8 @@ class HomeFragmentVM @ViewModelInject constructor(
         const val NO_PLAYER = 0
         const val PLAYER_ONE = 1
         const val PLAYER_TWO = 2
+        const val TIME_INCREMENT = 1L
+        const val NO_TIME = 0L
         val SIMPLE_DELAY_MILLIS = TimeUnit.SECONDS.toMillis(2)
-        private const val TAG = "HomeFragmentVM"
     }
 }

@@ -56,10 +56,6 @@ abstract class MviViewModel<STATE, EFFECT, NAVIGATION, EVENT, STATE_CHANGE> : Vi
 
 
 
-
-
-
-
     abstract fun reduceToViewState(stateChange: STATE_CHANGE)
 
     abstract fun process(viewEvent: EVENT)

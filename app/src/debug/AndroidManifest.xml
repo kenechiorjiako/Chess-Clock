@@ -1,0 +1,14 @@
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.skylex_chess_clock.chessclock">
+
+    <application
+        android:name="com.skylex_chess_clock.chessclock.MyApplication">
+        <activity
+            android:name=".SingleFragmentActivity"
+            android:exported="false">
+        </activity>
+    </application>
+
+</manifest>

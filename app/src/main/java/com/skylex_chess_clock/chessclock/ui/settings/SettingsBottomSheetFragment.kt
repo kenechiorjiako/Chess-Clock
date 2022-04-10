@@ -137,7 +137,7 @@ class SettingsBottomSheetFragment: BottomSheetDialogFragment() {
         selectedClockMode.observe(viewLifecycleOwner, Observer<ClockMode> {
             binding.clockTextView.text = it.toString()
 
-            if (it == ClockMode.Sudden_Death || it == ClockMode.Hourglass) {
+            if (it == ClockMode.SUDDEN_DEATH || it == ClockMode.HOURGLASS) {
                 binding.incrementTextView.visibility = View.GONE
                 binding.incrementTextViewLabel.visibility = View.GONE
             } else {

@@ -9,22 +9,26 @@ import java.util.concurrent.TimeUnit
 
 @Parcelize
 data class TimeHelper(
-        val time: Long? = null,
-        val timeUnit: TimeUnit? = null
+        val time: Long,
+        val timeUnit: TimeUnit
 ): Parcelable {
+
+    fun toSeconds(): Long {
+        return timeUnit.toSeconds(time)
+    }
+
+
     override fun toString(): String {
         var timeInString = "$time"
 
-        when (timeUnit) {
-            TimeUnit.SECONDS -> {
-                timeInString += " secs"
-            }
-            TimeUnit.MINUTES -> {
-                timeInString += " mins"
-            }
-            TimeUnit.HOURS -> {
-                timeInString += " hours"
-            }
+        timeInString += when (timeUnit) {
+            TimeUnit.SECONDS -> " secs"
+            TimeUnit.MINUTES -> " mins"
+            TimeUnit.HOURS -> " hours"
+            TimeUnit.NANOSECONDS -> " nano secs"
+            TimeUnit.MICROSECONDS -> " micro secs"
+            TimeUnit.MILLISECONDS -> " millis"
+            TimeUnit.DAYS -> " days"
         }
 
         if (time == 1L) {

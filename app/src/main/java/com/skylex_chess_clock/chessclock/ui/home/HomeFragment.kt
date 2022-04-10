@@ -10,7 +10,6 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
-import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.viewModels
 import com.skylex_chess_clock.chessclock.*
 import com.skylex_chess_clock.chessclock.databinding.FragmentHomeBinding
@@ -37,8 +36,10 @@ class HomeFragment : MviFragment<ViewState, ViewEffect, ViewNavigation, Event, P
 
     override fun onPause() {
         super.onPause()
-        if (viewModel.viewStates().value != null && viewModel.viewStates().value!!.clockActive && viewModel.viewStates().value!!.playerOneTime != 0L && viewModel.viewStates().value!!.playerTwoTime != 0L ) {
-            mEvents.onNext(Event.PauseButtonClicked)
+        viewModel.viewStates().value?.let { viewState ->
+            if (!viewState.gameOver() && viewState.clockActive) {
+                mEvents.onNext(Event.PauseButtonClicked)
+            }
         }
     }
 
@@ -50,7 +51,6 @@ class HomeFragment : MviFragment<ViewState, ViewEffect, ViewNavigation, Event, P
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = FragmentHomeBinding.inflate(layoutInflater, container, false)
-
 
         observeFragmentResults()
 
@@ -68,7 +68,6 @@ class HomeFragment : MviFragment<ViewState, ViewEffect, ViewNavigation, Event, P
     override fun setupViewHelperObjects() {
 
     }
-
     override fun setupViews() {
     }
 
@@ -88,18 +87,16 @@ class HomeFragment : MviFragment<ViewState, ViewEffect, ViewNavigation, Event, P
                 mEvents.onNext(Event.OnSettingsButtonClicked)
             }
 
-            playerOneSection.setOnTouchListener { v, event ->
+            playerOneSection.setOnTouchListener { _, event ->
                 if (event.action == MotionEvent.ACTION_DOWN) {
-                    mEvents.onNext(Event.PlayerClockClicked(PLAYER_ONE))
+                    mEvents.onNext(Event.PlayerClockTouched(PLAYER_ONE))
                 }
-
                 true
             }
-            playerTwoSection.setOnTouchListener { v, event ->
+            playerTwoSection.setOnTouchListener { _, event ->
                 if (event.action == MotionEvent.ACTION_DOWN) {
-                    mEvents.onNext(Event.PlayerClockClicked(PLAYER_TWO))
+                    mEvents.onNext(Event.PlayerClockTouched(PLAYER_TWO))
                 }
-
                 true
             }
         }
@@ -108,27 +105,26 @@ class HomeFragment : MviFragment<ViewState, ViewEffect, ViewNavigation, Event, P
     private fun observeFragmentResults() {
         childFragmentManager.setFragmentResultListener(
             SettingsBottomSheetFragment.RESULT_KEY,
-            viewLifecycleOwner,
-            FragmentResultListener { requestKey , result ->
-                val clockMode: ClockMode = result.getSerializable(CLOCK_MODE_RESULT_KEY) as ClockMode
-                val time: TimeHelper = Parcels.unwrap(result.getParcelable(TIME_RESULT_KEY))
-                val increment: TimeHelper = Parcels.unwrap(result.getParcelable(INCREMENT_RESULT_KEY))
-                mEvents.onNext(Event.SettingsChangeEvent(time, increment, clockMode))
-            }
-        )
+            viewLifecycleOwner
+        ) { _, result ->
+            val clockMode: ClockMode = result.getSerializable(CLOCK_MODE_RESULT_KEY) as ClockMode
+            val time: TimeHelper = Parcels.unwrap(result.getParcelable(TIME_RESULT_KEY))
+            val increment: TimeHelper = Parcels.unwrap(result.getParcelable(INCREMENT_RESULT_KEY))
+            mEvents.onNext(Event.SettingsChangeEvent(time, increment, clockMode))
+        }
     }
 
     override fun renderViewState(viewState: ViewState) {
         binding.apply {
 
-            refreshButton.isClickable = !viewState.clockActive || (viewState.playerOneTime == 0L || viewState.playerTwoTime == 0L)
-            settingsButton.isClickable = !viewState.clockActive || (viewState.playerOneTime == 0L || viewState.playerTwoTime == 0L)
+            refreshButton.isClickable = !viewState.clockActive || viewState.gameOver()
+            settingsButton.isClickable = !viewState.clockActive || viewState.gameOver()
 
             if (viewState.clockActive) {
                 clockActivityDimmer.visibility = GONE
                 pauseButton.visibility = VISIBLE
                 playButton.visibility = GONE
-                if (viewState.playerOneTime == 0L || viewState.playerTwoTime == 0L) {
+                if (viewState.gameOver()) {
                     refreshButton.alpha = 1f
                     settingsButton.alpha = 1f
                     pauseButton.alpha = 0.5f
@@ -164,7 +160,7 @@ class HomeFragment : MviFragment<ViewState, ViewEffect, ViewNavigation, Event, P
                 PLAYER_ONE -> {
                     playerTwoTime.setTextColor(resources.getColor(R.color.time_color_inactive))
                     playerOneTime.setTextColor(resources.getColor(R.color.white))
-                    if (viewState.playerOneTime == 0L) {
+                    if (viewState.playerTimes.getValue(PLAYER_ONE) == 0L) {
                         playerOneSection.setBackgroundResource(R.color.color_timeout_red)
                     } else {
                         playerOneSection.setBackgroundResource(R.color.color_primary)
@@ -175,7 +171,7 @@ class HomeFragment : MviFragment<ViewState, ViewEffect, ViewNavigation, Event, P
                     playerTwoTime.setTextColor(resources.getColor(R.color.white))
                     playerOneTime.setTextColor(resources.getColor(R.color.time_color_inactive))
                     playerOneSection.setBackgroundResource(R.color.color_transparent)
-                    if (viewState.playerTwoTime == 0L) {
+                    if (viewState.playerTimes.getValue(PLAYER_TWO) == 0L) {
                         playerTwoSection.setBackgroundResource(R.color.color_timeout_red)
                     } else {
                         playerTwoSection.setBackgroundResource(R.color.color_primary)
@@ -183,22 +179,22 @@ class HomeFragment : MviFragment<ViewState, ViewEffect, ViewNavigation, Event, P
                 }
             }
 
-            if (viewState.playerOneTime == 0L) {
+            if (viewState.playerTimes.getValue(PLAYER_ONE) == 0L) {
                 playerOneTime.visibility = GONE
                 playerOneTimeoutTextView.visibility = VISIBLE
             } else {
                 playerOneTime.visibility = VISIBLE
                 playerOneTimeoutTextView.visibility = GONE
             }
-            if (viewState.playerTwoTime == 0L) {
+            if (viewState.playerTimes.getValue(PLAYER_TWO) == 0L) {
                 playerTwoTime.visibility = GONE
                 playerTwoTimeoutTextView.visibility = VISIBLE
             } else {
                 playerTwoTime.visibility = VISIBLE
                 playerTwoTimeoutTextView.visibility = GONE
             }
-            playerTwoTime.text = getTimeTextFromSeconds(viewState.playerTwoTime)
-            playerOneTime.text = getTimeTextFromSeconds(viewState.playerOneTime)
+            playerTwoTime.text = getTimeTextFromSeconds(viewState.playerTimes.getValue(PLAYER_TWO))
+            playerOneTime.text = getTimeTextFromSeconds(viewState.playerTimes.getValue(PLAYER_ONE))
         }
     }
 
