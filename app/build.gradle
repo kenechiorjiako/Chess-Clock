@@ -89,9 +89,10 @@ dependencies {
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
 
     // jetpack navigation
-    def nav_version = "2.3.2"
-    implementation "androidx.navigation:navigation-fragment-ktx:2.3.2"
-    implementation "androidx.navigation:navigation-ui-ktx:2.3.2"
+    def nav_version = "2.4.2"
+    implementation "androidx.navigation:navigation-fragment-ktx:2.4.2"
+    implementation "androidx.navigation:navigation-ui-ktx:2.4.2"
+    testImplementation "androidx.navigation:navigation-testing:$nav_version"
 
 
     //RxJava
