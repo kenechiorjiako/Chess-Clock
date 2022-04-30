@@ -10,3 +10,5 @@ MVI Architecture: To easily manage app state
 DataStore: The app makes use of shared preferences to store app data
 
 RxJava: For Multithreading and Reactive programming
+
+Unit & Instrumentation testing using JUnit and Roboletric
