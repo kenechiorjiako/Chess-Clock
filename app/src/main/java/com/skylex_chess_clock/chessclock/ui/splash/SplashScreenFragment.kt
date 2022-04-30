@@ -15,7 +15,9 @@ import com.skylex_chess_clock.chessclock.util.AnimationUtil
 import com.skylex_chess_clock.chessclock.ui.splash.SplashScreenVM.*
 import com.skylex_chess_clock.chessclock.ui.splash.SplashScreenVM.ViewNavigation.*
 import com.skylex_chess_clock.news_feed.util.MviFragment
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class SplashScreenFragment() : MviFragment<Any, ViewEffect, ViewNavigation, Event, Any, SplashScreenVM>() {
 
     lateinit var binding: FragmentSplashScreenBinding

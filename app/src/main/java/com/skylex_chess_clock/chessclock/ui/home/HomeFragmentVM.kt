@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.emptyPreferences
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.skylex_chess_clock.chessclock.*
@@ -21,6 +22,7 @@ import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.io.IOException
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -35,18 +37,27 @@ class HomeFragmentVM @Inject constructor(
     private lateinit var currentTimeIncrement: TimeHelper
     private var clockActivated: Long = 0
 
-    init {
+    fun init() {
+        firstLoadOccurred = true
         viewState = ViewState()
 
         disposables.add(
-            Observable.interval(TIME_INCREMENT, TimeUnit.SECONDS, Schedulers.io())
+            Observable.interval(TIME_INCREMENT, TimeUnit.SECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
+                .filter { viewState.clockActive }
                 .subscribe {
                     changeClockTimes()
                 }
         )
 
         dataStore.data
+            .catch { exception ->
+                if (exception is IOException) {
+                    emit(emptyPreferences())
+                } else {
+                    throw exception
+                }
+            }
             .onEach{ preferences ->
                 val currentTimePreference = preferences[PreferenceKeys.timeHelperPreferenceKey] ?: TimeHelper.TimeHelperPreferencesConverter.serialize(
                     TimeHelper(5, TimeUnit.MINUTES)
@@ -160,6 +171,7 @@ class HomeFragmentVM @Inject constructor(
                 preferences[PreferenceKeys.timeHelperPreferenceKey] = TimeHelper.TimeHelperPreferencesConverter.serialize(time)
                 preferences[PreferenceKeys.timeIncrementPreferenceKey] = TimeHelper.TimeHelperPreferencesConverter.serialize(increment)
                 preferences[PreferenceKeys.clockModePreferenceKey] = clockMode.name
+//                handleRefreshClocks()
             }
         }
         handleRefreshClocks()
