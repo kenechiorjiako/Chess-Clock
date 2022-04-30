@@ -1,10 +1,8 @@
 package com.skylex_chess_clock.chessclock.ui.home
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.MutablePreferences
-import androidx.datastore.preferences.core.Preferences
-import androidx.lifecycle.SavedStateHandle
+import com.skylex_chess_clock.chessclock.data.UserPreferences
+import com.skylex_chess_clock.chessclock.data.UserPreferencesRepo
 import com.skylex_chess_clock.chessclock.ui.home.HomeFragmentVM.Companion.NO_PLAYER
 import com.skylex_chess_clock.chessclock.ui.home.HomeFragmentVM.Companion.NO_TIME
 import com.skylex_chess_clock.chessclock.ui.home.HomeFragmentVM.Companion.PLAYER_ONE
@@ -40,26 +38,26 @@ class HomeFragmentVMTest {
 
 
 
-    private val mockDataStore = mockk<DataStore<Preferences>>()
-    private val mockSavedStateHandle = mockk<SavedStateHandle>()
-    private val mockPreferences = mockk<MutablePreferences>()
+    private val mockUserPreferencesRepo = mockk<UserPreferencesRepo>()
 
     private val defaultPlayerTime = TimeHelper(5, TimeUnit.MINUTES)
     private val defaultTimeIncrement = TimeHelper(2, TimeUnit.SECONDS)
     private val defaultClockMode = ClockMode.SUDDEN_DEATH.name
 
+    private val defaultUserPreferences = UserPreferences(
+        defaultPlayerTime,
+        defaultTimeIncrement,
+        ClockMode.valueOf(defaultClockMode)
+    )
+
     private val sut = HomeFragmentVM(
-        mockSavedStateHandle,
-        mockDataStore
+        mockUserPreferencesRepo
     )
 
     @Before
     fun setup() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
-        every { mockDataStore.data } returns flowOf(mockPreferences)
-        every { mockPreferences[PreferenceKeys.timeHelperPreferenceKey] } returns TimeHelper.TimeHelperPreferencesConverter.serialize(defaultPlayerTime)
-        every { mockPreferences[PreferenceKeys.timeIncrementPreferenceKey] } returns TimeHelper.TimeHelperPreferencesConverter.serialize(defaultTimeIncrement)
-        every { mockPreferences[PreferenceKeys.clockModePreferenceKey] } returns defaultClockMode
+        every { mockUserPreferencesRepo.userPreferencesFlow } returns flowOf(defaultUserPreferences)
     }
 
     @Test
@@ -112,8 +110,9 @@ class HomeFragmentVMTest {
 
     @Test
     fun `Given new viewModel and clock mode is hourglass, when player touches his clock and no player was active, then second player time should countdown`() {
-        every { mockPreferences[PreferenceKeys.clockModePreferenceKey] } returns ClockMode.HOURGLASS.name
-
+        every { mockUserPreferencesRepo.userPreferencesFlow } returns flowOf(defaultUserPreferences.copy(
+            clockMode = ClockMode.HOURGLASS
+        ))
         val testScheduler = TestScheduler()
         RxJavaPlugins.setComputationSchedulerHandler { testScheduler }
 
@@ -212,7 +211,11 @@ class HomeFragmentVMTest {
         RxJavaPlugins.setComputationSchedulerHandler { testScheduler }
 
         val playerTime = TimeHelper(6, TimeUnit.MINUTES)
-        every { mockPreferences[PreferenceKeys.timeHelperPreferenceKey] } returns TimeHelper.TimeHelperPreferencesConverter.serialize(playerTime)
+        every {
+            mockUserPreferencesRepo.userPreferencesFlow
+        } returns flowOf(defaultUserPreferences.copy(
+            time = playerTime
+        ))
 
         sut.init()
         sut.process(Event.PlayerClockTouched(PLAYER_ONE))

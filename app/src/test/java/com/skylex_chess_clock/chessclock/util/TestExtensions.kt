@@ -5,9 +5,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.annotation.IdRes
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.test.core.app.ActivityScenario
 import com.skylex_chess_clock.chessclock.SingleFragmentActivity
+import junit.framework.TestCase.assertFalse
 import org.junit.Assert.assertEquals
 import org.robolectric.Shadows.shadowOf
 
@@ -39,11 +41,17 @@ fun launch(fragment: Fragment, testCode: (SingleFragmentActivity) -> Unit) {
     }
 }
 
-fun ViewGroup.getTextForId(@IdRes id: Int) =
+fun View.getTextForId(@IdRes id: Int) =
     findViewById<TextView>(id).text.toString()
 
-fun ViewGroup.assertVisible(id: Int) =
+fun View.assertVisible(id: Int) =
     assertEquals(View.VISIBLE, findViewById<View>(id).visibility)
 
-fun ViewGroup.assertGone(id: Int) =
+fun View.assertNotVisible(id: Int) =
+    assertFalse(findViewById<View>(id).isVisible)
+
+fun View.performClick(id: Int) =
+    findViewById<View>(id).performClick()
+
+fun View.assertGone(id: Int) =
     assertEquals(View.GONE, findViewById<View>(id).visibility)

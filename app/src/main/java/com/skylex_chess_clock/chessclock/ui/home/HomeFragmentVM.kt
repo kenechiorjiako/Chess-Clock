@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.emptyPreferences
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.skylex_chess_clock.chessclock.*
+import com.skylex_chess_clock.chessclock.data.UserPreferencesRepo
 import com.skylex_chess_clock.chessclock.util.PreferenceKeys
 import com.skylex_chess_clock.chessclock.util.TimeHelper
 import com.skylex_chess_clock.chessclock.util.TopLevelFiles.Companion.ClockMode
@@ -28,8 +29,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeFragmentVM @Inject constructor(
-    private val savedStateHandle: SavedStateHandle,
-    private val dataStore: DataStore<Preferences>
+    private val userPreferencesRepo: UserPreferencesRepo
 ) : MviViewModel<ViewState, ViewEffect, ViewNavigation, Event, PartialStateChange>() {
 
     private lateinit var currentClockMode: ClockMode
@@ -50,31 +50,17 @@ class HomeFragmentVM @Inject constructor(
                 }
         )
 
-        dataStore.data
-            .catch { exception ->
-                if (exception is IOException) {
-                    emit(emptyPreferences())
-                } else {
-                    throw exception
-                }
-            }
+        userPreferencesRepo.userPreferencesFlow
             .onEach{ preferences ->
-                val currentTimePreference = preferences[PreferenceKeys.timeHelperPreferenceKey] ?: TimeHelper.TimeHelperPreferencesConverter.serialize(
-                    TimeHelper(5, TimeUnit.MINUTES)
-                )
-                currentTime = TimeHelper.TimeHelperPreferencesConverter.deserialize(currentTimePreference)
-                reduceToViewState(PlayerTimeChange(PLAYER_ONE, currentTime.toSeconds()))
-                reduceToViewState(PlayerTimeChange(PLAYER_TWO, currentTime.toSeconds()))
+                currentTime = preferences.time
+                reduceToViewState(PlayerTimeChange(PLAYER_ONE, preferences.time.toSeconds()))
+                reduceToViewState(PlayerTimeChange(PLAYER_TWO, preferences.time.toSeconds()))
 
+                currentTimeIncrement = preferences.increment
 
+                currentClockMode = preferences.clockMode
 
-                val timeIncrementPreference = preferences[PreferenceKeys.timeIncrementPreferenceKey] ?: TimeHelper.TimeHelperPreferencesConverter.serialize(TimeHelper(2, TimeUnit.SECONDS))
-                currentTimeIncrement = TimeHelper.TimeHelperPreferencesConverter.deserialize(timeIncrementPreference)
-
-                val clockModePreference = preferences[PreferenceKeys.clockModePreferenceKey] ?: ClockMode.SUDDEN_DEATH.name
-                currentClockMode = ClockMode.getClockModeFromName(clockModePreference)
-
-        }.launchIn(viewModelScope)
+            }.launchIn(viewModelScope)
     }
 
     override fun reduceToViewState(stateChange: PartialStateChange) {
@@ -167,12 +153,7 @@ class HomeFragmentVM @Inject constructor(
     }
     private fun handleSettingsChangeEvent(clockMode: ClockMode, time: TimeHelper, increment: TimeHelper) {
         viewModelScope.launch {
-            dataStore.edit { preferences ->
-                preferences[PreferenceKeys.timeHelperPreferenceKey] = TimeHelper.TimeHelperPreferencesConverter.serialize(time)
-                preferences[PreferenceKeys.timeIncrementPreferenceKey] = TimeHelper.TimeHelperPreferencesConverter.serialize(increment)
-                preferences[PreferenceKeys.clockModePreferenceKey] = clockMode.name
-//                handleRefreshClocks()
-            }
+            userPreferencesRepo.updateUserSettings(clockMode, time, increment)
         }
         handleRefreshClocks()
     }

@@ -128,13 +128,13 @@ class SettingsBottomSheetFragment: BottomSheetDialogFragment() {
         }
     }
     private fun loadPage() {
-        selectedTime.observe(viewLifecycleOwner, Observer<TimeHelper> {
+        selectedTime.observe(viewLifecycleOwner) {
             binding.timeTextView.text = it.toString()
-        })
-        selectedIncrement.observe(viewLifecycleOwner, Observer<TimeHelper> {
+        }
+        selectedIncrement.observe(viewLifecycleOwner) {
             binding.incrementTextView.text = it.toString()
-        })
-        selectedClockMode.observe(viewLifecycleOwner, Observer<ClockMode> {
+        }
+        selectedClockMode.observe(viewLifecycleOwner) {
             binding.clockTextView.text = it.toString()
 
             if (it == ClockMode.SUDDEN_DEATH || it == ClockMode.HOURGLASS) {
@@ -144,7 +144,7 @@ class SettingsBottomSheetFragment: BottomSheetDialogFragment() {
                 binding.incrementTextView.visibility = View.VISIBLE
                 binding.incrementTextViewLabel.visibility = View.VISIBLE
             }
-        })
+        }
 
         selectedTime.value = arguments?.getParcelable(TIME_RESULT_KEY)
         selectedIncrement.value = arguments?.getParcelable(INCREMENT_RESULT_KEY)
