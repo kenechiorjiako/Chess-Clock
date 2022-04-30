@@ -15,7 +15,8 @@
         android:theme="@style/Theme.ChessClock">
         <activity
             android:name="com.skylex_chess_clock.chessclock.ui.MainActivity"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
