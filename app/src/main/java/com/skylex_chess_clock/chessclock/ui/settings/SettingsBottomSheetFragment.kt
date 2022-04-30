@@ -8,14 +8,13 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.skylex_chess_clock.chessclock.*
 import com.skylex_chess_clock.chessclock.databinding.RecyclerViewAlertDialogLayoutBinding
 import com.skylex_chess_clock.chessclock.databinding.SettingsBottomSheetBinding
 import com.skylex_chess_clock.chessclock.ui.adapters.SelectorRVAdapter
-import com.skylex_chess_clock.chessclock.util.TimeHelper
+import com.skylex_chess_clock.chessclock.util.TimeMapper
 import com.skylex_chess_clock.chessclock.util.TopLevelFiles
 import com.skylex_chess_clock.chessclock.util.TopLevelFiles.Companion.ClockMode
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -29,8 +28,8 @@ class SettingsBottomSheetFragment: BottomSheetDialogFragment() {
     private lateinit var alertDialogLayoutBinding: RecyclerViewAlertDialogLayoutBinding
     private lateinit var mAlertDialog: AlertDialog
 
-    private var selectedTime: MutableLiveData<TimeHelper> = MutableLiveData()
-    private var selectedIncrement: MutableLiveData<TimeHelper> = MutableLiveData()
+    private var selectedTime: MutableLiveData<TimeMapper> = MutableLiveData()
+    private var selectedIncrement: MutableLiveData<TimeMapper> = MutableLiveData()
     private var selectedClockMode: MutableLiveData<ClockMode> = MutableLiveData()
 
 
@@ -91,8 +90,8 @@ class SettingsBottomSheetFragment: BottomSheetDialogFragment() {
 
                 val listItems = TopLevelFiles.clockTimes
 
-                val selectorRVAdapter = SelectorRVAdapter(eventHandler = object : SelectorRVAdapter.EventHandler<TimeHelper> {
-                    override fun onItemClicked(item: TimeHelper) {
+                val selectorRVAdapter = SelectorRVAdapter(eventHandler = object : SelectorRVAdapter.EventHandler<TimeMapper> {
+                    override fun onItemClicked(item: TimeMapper) {
                         selectedTime.value = item
                         mAlertDialog.dismiss()
                     }
@@ -108,8 +107,8 @@ class SettingsBottomSheetFragment: BottomSheetDialogFragment() {
 
                 val listItems = TopLevelFiles.incrementTimes
 
-                val selectorRVAdapter = SelectorRVAdapter(eventHandler = object : SelectorRVAdapter.EventHandler<TimeHelper> {
-                    override fun onItemClicked(item: TimeHelper) {
+                val selectorRVAdapter = SelectorRVAdapter(eventHandler = object : SelectorRVAdapter.EventHandler<TimeMapper> {
+                    override fun onItemClicked(item: TimeMapper) {
                         selectedIncrement.value = item
                         mAlertDialog.dismiss()
                     }

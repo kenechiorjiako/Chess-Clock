@@ -8,7 +8,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.preferencesDataStoreFile
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.skylex_chess_clock.chessclock.util.TimeHelper
+import com.skylex_chess_clock.chessclock.util.TimeMapper
 import com.skylex_chess_clock.chessclock.util.TopLevelFiles.Companion.ClockMode
 import junit.framework.Assert.assertEquals
 import kotlinx.coroutines.Dispatchers
@@ -44,8 +44,8 @@ class UserPreferencesRepoTest {
     private val sut = UserPreferencesRepo(testDataStore)
 
     // MockData
-    private val defaultPlayerTime = TimeHelper(5, TimeUnit.MINUTES)
-    private val defaultTimeIncrement = TimeHelper(2, TimeUnit.SECONDS)
+    private val defaultPlayerTime = TimeMapper(5, TimeUnit.MINUTES)
+    private val defaultTimeIncrement = TimeMapper(2, TimeUnit.SECONDS)
     private val defaultClockMode = ClockMode.SUDDEN_DEATH.name
 
     private val expectedInitialPreferences = UserPreferences(
@@ -92,7 +92,7 @@ class UserPreferencesRepoTest {
 
     @Test
     fun verify_updateClockTime() = runTest {
-        val expectedClockTime = TimeHelper(2, TimeUnit.DAYS)
+        val expectedClockTime = TimeMapper(2, TimeUnit.DAYS)
         sut.updateClockTime(expectedClockTime)
         assertEquals(
             expectedClockTime,
@@ -102,7 +102,7 @@ class UserPreferencesRepoTest {
 
     @Test
     fun verify_updateTimeIncrement() = runTest {
-        val expectedTimeIncrement = TimeHelper(2, TimeUnit.DAYS)
+        val expectedTimeIncrement = TimeMapper(2, TimeUnit.DAYS)
         sut.updateTimeIncrement(expectedTimeIncrement)
         assertEquals(
             expectedTimeIncrement,

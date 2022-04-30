@@ -12,7 +12,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.skylex_chess_clock.chessclock.R
 import com.skylex_chess_clock.chessclock.data.UserPreferences
 import com.skylex_chess_clock.chessclock.data.UserPreferencesRepo
-import com.skylex_chess_clock.chessclock.ui.settings.SettingsBottomSheetFragment
 import com.skylex_chess_clock.chessclock.util.*
 import io.mockk.every
 import io.mockk.mockk
@@ -55,8 +54,8 @@ class HomeFragmentTest: RobolectricFragmentScenarioTestCase<HomeFragment>(HomeFr
 
     private val mockUserPreferencesRepo = mockk<UserPreferencesRepo>()
 
-    private val defaultPlayerTime = TimeHelper(5, TimeUnit.MINUTES)
-    private val defaultTimeIncrement = TimeHelper(2, TimeUnit.SECONDS)
+    private val defaultPlayerTime = TimeMapper(5, TimeUnit.MINUTES)
+    private val defaultTimeIncrement = TimeMapper(2, TimeUnit.SECONDS)
     private val defaultClockMode = TopLevelFiles.Companion.ClockMode.SUDDEN_DEATH.name
 
     private val defaultUserPreferences = UserPreferences(
@@ -81,7 +80,7 @@ class HomeFragmentTest: RobolectricFragmentScenarioTestCase<HomeFragment>(HomeFr
             assertTrue(view.findViewById<ImageView>(R.id.refresh_button).isClickable)
             assertTrue(view.findViewById<ImageView>(R.id.settings_button).isClickable)
 
-            val expectedDisplayTime = TimeUtil.getTimeTextFromSeconds(defaultPlayerTime.toSeconds())
+            val expectedDisplayTime = ClockUtil.getTimeTextFromSeconds(defaultPlayerTime.toSeconds())
 
             assertEquals(expectedDisplayTime, view.findViewById<TextView>(R.id.player_one_time).text.toString())
             assertEquals(expectedDisplayTime, view.findViewById<TextView>(R.id.player_two_time).text.toString())
@@ -118,7 +117,7 @@ class HomeFragmentTest: RobolectricFragmentScenarioTestCase<HomeFragment>(HomeFr
             // Assert time counts down
             val advanceTimeSeconds = 10L
             testScheduler.advanceTimeBy(advanceTimeSeconds, TimeUnit.SECONDS)
-            val expectedTimeOnPlayerTwoClock = TimeUtil.getTimeTextFromSeconds(defaultPlayerTime.toSeconds() - advanceTimeSeconds)
+            val expectedTimeOnPlayerTwoClock = ClockUtil.getTimeTextFromSeconds(defaultPlayerTime.toSeconds() - advanceTimeSeconds)
 
             assertEquals(expectedTimeOnPlayerTwoClock, view.findViewById<TextView>(R.id.player_two_time).text.toString())
         }
@@ -150,7 +149,7 @@ class HomeFragmentTest: RobolectricFragmentScenarioTestCase<HomeFragment>(HomeFr
             // Assert time counts down
             val advanceTimeSeconds = 10L
             testScheduler.advanceTimeBy(advanceTimeSeconds, TimeUnit.SECONDS)
-            val expectedTimeOnPlayerTwoClock = TimeUtil.getTimeTextFromSeconds(defaultPlayerTime.toSeconds() - advanceTimeSeconds)
+            val expectedTimeOnPlayerTwoClock = ClockUtil.getTimeTextFromSeconds(defaultPlayerTime.toSeconds() - advanceTimeSeconds)
 
             assertEquals(expectedTimeOnPlayerTwoClock, view.findViewById<TextView>(R.id.player_one_time).text.toString())
         }
@@ -185,7 +184,7 @@ class HomeFragmentTest: RobolectricFragmentScenarioTestCase<HomeFragment>(HomeFr
 
             // Advance time indefinitely while game is paused
             testScheduler.advanceTimeBy(500, TimeUnit.SECONDS)
-            val expectedTimeOnPlayerTwoClock = TimeUtil.getTimeTextFromSeconds(defaultPlayerTime.toSeconds() - advanceTimeSeconds)
+            val expectedTimeOnPlayerTwoClock = ClockUtil.getTimeTextFromSeconds(defaultPlayerTime.toSeconds() - advanceTimeSeconds)
 
             assertEquals(expectedTimeOnPlayerTwoClock, view.findViewById<TextView>(R.id.player_two_time).text.toString())
         }
@@ -217,7 +216,7 @@ class HomeFragmentTest: RobolectricFragmentScenarioTestCase<HomeFragment>(HomeFr
             assertTrue(view.findViewById<ImageView>(R.id.refresh_button).isClickable)
             assertTrue(view.findViewById<ImageView>(R.id.settings_button).isClickable)
 
-            val expectedDisplayTime = TimeUtil.getTimeTextFromSeconds(defaultPlayerTime.toSeconds())
+            val expectedDisplayTime = ClockUtil.getTimeTextFromSeconds(defaultPlayerTime.toSeconds())
 
             assertEquals(expectedDisplayTime, view.findViewById<TextView>(R.id.player_one_time).text.toString())
             assertEquals(expectedDisplayTime, view.findViewById<TextView>(R.id.player_two_time).text.toString())

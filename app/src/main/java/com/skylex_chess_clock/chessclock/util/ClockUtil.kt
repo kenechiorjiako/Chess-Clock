@@ -2,7 +2,7 @@ package com.skylex_chess_clock.chessclock.util
 
 import java.util.*
 
-class TimeUtil {
+class ClockUtil {
     companion object {
         fun getTimeTextFromSeconds(seconds: Long) : String {
             var timeText = ""

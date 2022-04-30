@@ -14,7 +14,7 @@ import androidx.fragment.app.viewModels
 import com.skylex_chess_clock.chessclock.*
 import com.skylex_chess_clock.chessclock.databinding.FragmentHomeBinding
 import com.skylex_chess_clock.chessclock.ui.settings.SettingsBottomSheetFragment
-import com.skylex_chess_clock.chessclock.util.TimeHelper
+import com.skylex_chess_clock.chessclock.util.TimeMapper
 import com.skylex_chess_clock.chessclock.util.TopLevelFiles.Companion.ClockMode
 import com.skylex_chess_clock.chessclock.ui.home.HomeFragmentVM.*
 import com.skylex_chess_clock.chessclock.ui.home.HomeFragmentVM.Companion.NO_PLAYER
@@ -109,8 +109,8 @@ class HomeFragment : MviFragment<ViewState, ViewEffect, ViewNavigation, Event, P
             viewLifecycleOwner
         ) { _, result ->
             val clockMode: ClockMode = result.getSerializable(CLOCK_MODE_RESULT_KEY) as ClockMode
-            val time: TimeHelper = Parcels.unwrap(result.getParcelable(TIME_RESULT_KEY))
-            val increment: TimeHelper = Parcels.unwrap(result.getParcelable(INCREMENT_RESULT_KEY))
+            val time: TimeMapper = Parcels.unwrap(result.getParcelable(TIME_RESULT_KEY))
+            val increment: TimeMapper = Parcels.unwrap(result.getParcelable(INCREMENT_RESULT_KEY))
             mEvents.onNext(Event.SettingsChangeEvent(time, increment, clockMode))
         }
     }

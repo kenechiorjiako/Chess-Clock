@@ -1,29 +1,20 @@
 package com.skylex_chess_clock.chessclock.ui.home
 
 import android.os.Bundle
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.emptyPreferences
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.skylex_chess_clock.chessclock.*
 import com.skylex_chess_clock.chessclock.data.UserPreferencesRepo
-import com.skylex_chess_clock.chessclock.util.PreferenceKeys
-import com.skylex_chess_clock.chessclock.util.TimeHelper
+import com.skylex_chess_clock.chessclock.util.TimeMapper
 import com.skylex_chess_clock.chessclock.util.TopLevelFiles.Companion.ClockMode
 import com.skylex_chess_clock.chessclock.ui.home.HomeFragmentVM.*
 import com.skylex_chess_clock.chessclock.ui.home.HomeFragmentVM.Event.*
 import com.skylex_chess_clock.chessclock.ui.home.HomeFragmentVM.PartialStateChange.*
 import com.skylex_chess_clock.news_feed.util.MviViewModel
-import dagger.assisted.Assisted
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import java.io.IOException
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -33,8 +24,8 @@ class HomeFragmentVM @Inject constructor(
 ) : MviViewModel<ViewState, ViewEffect, ViewNavigation, Event, PartialStateChange>() {
 
     private lateinit var currentClockMode: ClockMode
-    private lateinit var currentTime: TimeHelper
-    private lateinit var currentTimeIncrement: TimeHelper
+    private lateinit var currentTime: TimeMapper
+    private lateinit var currentTimeIncrement: TimeMapper
     private var clockActivated: Long = 0
 
     fun init() {
@@ -151,7 +142,7 @@ class HomeFragmentVM @Inject constructor(
     private fun handlePauseButtonClicked() {
         reduceToViewState(ClockActivityChange(false))
     }
-    private fun handleSettingsChangeEvent(clockMode: ClockMode, time: TimeHelper, increment: TimeHelper) {
+    private fun handleSettingsChangeEvent(clockMode: ClockMode, time: TimeMapper, increment: TimeMapper) {
         viewModelScope.launch {
             userPreferencesRepo.updateUserSettings(clockMode, time, increment)
         }
@@ -252,7 +243,7 @@ class HomeFragmentVM @Inject constructor(
         object PlayButtonClicked : Event()
         object PauseButtonClicked : Event()
         object OnSettingsButtonClicked : Event()
-        data class SettingsChangeEvent(val time: TimeHelper, val increment: TimeHelper, val clockMode: ClockMode): Event()
+        data class SettingsChangeEvent(val time: TimeMapper, val increment: TimeMapper, val clockMode: ClockMode): Event()
     }
 
 

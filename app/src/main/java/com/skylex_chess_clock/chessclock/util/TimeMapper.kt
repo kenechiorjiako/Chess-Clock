@@ -5,11 +5,10 @@ import com.f2prateek.rx.preferences2.Preference
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.android.parcel.Parcelize
-import java.util.*
 import java.util.concurrent.TimeUnit
 
 @Parcelize
-data class TimeHelper(
+data class TimeMapper(
         val time: Long,
         val timeUnit: TimeUnit
 ): Parcelable {
@@ -40,21 +39,21 @@ data class TimeHelper(
     }
 
     override fun equals(other: Any?): Boolean {
-        return (other is TimeHelper)
+        return (other is TimeMapper)
                 && time == other.time
                 && timeUnit == other.timeUnit
     }
 
-    object TimeHelperPreferencesConverter: Preference.Converter<TimeHelper> {
-        override fun deserialize(serialized: String): TimeHelper {
+    object TimeHelperPreferencesConverter: Preference.Converter<TimeMapper> {
+        override fun deserialize(serialized: String): TimeMapper {
             val gson = Gson()
-            val type = object : TypeToken<TimeHelper>() {}.type
+            val type = object : TypeToken<TimeMapper>() {}.type
             return gson.fromJson(serialized, type)
         }
 
-        override fun serialize(value: TimeHelper): String {
+        override fun serialize(value: TimeMapper): String {
             val gson = Gson()
-            val type = object : TypeToken<TimeHelper>() {}.type
+            val type = object : TypeToken<TimeMapper>() {}.type
             return gson.toJson(value, type)
         }
     }

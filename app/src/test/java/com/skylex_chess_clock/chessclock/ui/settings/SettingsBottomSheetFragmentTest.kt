@@ -20,8 +20,8 @@ class SettingsBottomSheetFragmentTest: RobolectricActivityTestScenario<SingleFra
 
     val sut = SettingsBottomSheetFragment()
 
-    private val defaultPlayerTime = TimeHelper(5, TimeUnit.MINUTES)
-    private val defaultTimeIncrement = TimeHelper(2, TimeUnit.SECONDS)
+    private val defaultPlayerTime = TimeMapper(5, TimeUnit.MINUTES)
+    private val defaultTimeIncrement = TimeMapper(2, TimeUnit.SECONDS)
     private val defaultClockMode = ClockMode.SUDDEN_DEATH.name
 
     @Before

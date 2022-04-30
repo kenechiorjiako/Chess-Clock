@@ -40,8 +40,8 @@ class HomeFragmentVMTest {
 
     private val mockUserPreferencesRepo = mockk<UserPreferencesRepo>()
 
-    private val defaultPlayerTime = TimeHelper(5, TimeUnit.MINUTES)
-    private val defaultTimeIncrement = TimeHelper(2, TimeUnit.SECONDS)
+    private val defaultPlayerTime = TimeMapper(5, TimeUnit.MINUTES)
+    private val defaultTimeIncrement = TimeMapper(2, TimeUnit.SECONDS)
     private val defaultClockMode = ClockMode.SUDDEN_DEATH.name
 
     private val defaultUserPreferences = UserPreferences(
@@ -171,8 +171,8 @@ class HomeFragmentVMTest {
         sut.init()
 
         val clockMode = ClockMode.SUDDEN_DEATH
-        val time = TimeHelper(15, TimeUnit.MINUTES)
-        val increment = TimeHelper(1, TimeUnit.SECONDS)
+        val time = TimeMapper(15, TimeUnit.MINUTES)
+        val increment = TimeMapper(1, TimeUnit.SECONDS)
 
         sut.process(Event.PlayButtonClicked)
         sut.process(Event.SettingsChangeEvent(clockMode = clockMode, time = time, increment = increment))
@@ -210,7 +210,7 @@ class HomeFragmentVMTest {
         val testScheduler = TestScheduler()
         RxJavaPlugins.setComputationSchedulerHandler { testScheduler }
 
-        val playerTime = TimeHelper(6, TimeUnit.MINUTES)
+        val playerTime = TimeMapper(6, TimeUnit.MINUTES)
         every {
             mockUserPreferencesRepo.userPreferencesFlow
         } returns flowOf(defaultUserPreferences.copy(

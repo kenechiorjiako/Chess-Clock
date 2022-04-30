@@ -5,7 +5,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import com.skylex_chess_clock.chessclock.util.PreferenceKeys
-import com.skylex_chess_clock.chessclock.util.TimeHelper
+import com.skylex_chess_clock.chessclock.util.TimeMapper
 import com.skylex_chess_clock.chessclock.util.TopLevelFiles.Companion.ClockMode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -17,8 +17,8 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 data class UserPreferences(
-    val time: TimeHelper,
-    val increment: TimeHelper,
+    val time: TimeMapper,
+    val increment: TimeMapper,
     val clockMode: ClockMode
 )
 
@@ -39,14 +39,14 @@ class UserPreferencesRepo @Inject constructor(
         }
 
     private fun mapToPreferences(preferences: Preferences): UserPreferences {
-        val currentTimePreference = preferences[PreferenceKeys.timeHelperPreferenceKey] ?: TimeHelper.TimeHelperPreferencesConverter.serialize(
-            TimeHelper(5, TimeUnit.MINUTES)
+        val currentTimePreference = preferences[PreferenceKeys.timeHelperPreferenceKey] ?: TimeMapper.TimeHelperPreferencesConverter.serialize(
+            TimeMapper(5, TimeUnit.MINUTES)
         )
-        val time = TimeHelper.TimeHelperPreferencesConverter.deserialize(currentTimePreference)
+        val time = TimeMapper.TimeHelperPreferencesConverter.deserialize(currentTimePreference)
 
 
-        val timeIncrementPreference = preferences[PreferenceKeys.timeIncrementPreferenceKey] ?: TimeHelper.TimeHelperPreferencesConverter.serialize(TimeHelper(2, TimeUnit.SECONDS))
-        val timeIncrement = TimeHelper.TimeHelperPreferencesConverter.deserialize(timeIncrementPreference)
+        val timeIncrementPreference = preferences[PreferenceKeys.timeIncrementPreferenceKey] ?: TimeMapper.TimeHelperPreferencesConverter.serialize(TimeMapper(2, TimeUnit.SECONDS))
+        val timeIncrement = TimeMapper.TimeHelperPreferencesConverter.deserialize(timeIncrementPreference)
 
         val clockModePreference = preferences[PreferenceKeys.clockModePreferenceKey] ?: ClockMode.SUDDEN_DEATH.name
         val clockMode = ClockMode.getClockModeFromName(clockModePreference)
@@ -54,10 +54,10 @@ class UserPreferencesRepo @Inject constructor(
         return UserPreferences(time, timeIncrement, clockMode)
     }
 
-    suspend fun updateUserSettings(clockMode: ClockMode, time: TimeHelper, increment: TimeHelper) {
+    suspend fun updateUserSettings(clockMode: ClockMode, time: TimeMapper, increment: TimeMapper) {
         dataStore.edit { preferences ->
-            preferences[PreferenceKeys.timeHelperPreferenceKey] = TimeHelper.TimeHelperPreferencesConverter.serialize(time)
-            preferences[PreferenceKeys.timeIncrementPreferenceKey] = TimeHelper.TimeHelperPreferencesConverter.serialize(increment)
+            preferences[PreferenceKeys.timeHelperPreferenceKey] = TimeMapper.TimeHelperPreferencesConverter.serialize(time)
+            preferences[PreferenceKeys.timeIncrementPreferenceKey] = TimeMapper.TimeHelperPreferencesConverter.serialize(increment)
             preferences[PreferenceKeys.clockModePreferenceKey] = clockMode.name
         }
     }
@@ -68,15 +68,15 @@ class UserPreferencesRepo @Inject constructor(
         }
     }
 
-    suspend fun updateClockTime(time: TimeHelper) {
+    suspend fun updateClockTime(time: TimeMapper) {
         dataStore.edit { preferences ->
-            preferences[PreferenceKeys.timeHelperPreferenceKey] = TimeHelper.TimeHelperPreferencesConverter.serialize(time)
+            preferences[PreferenceKeys.timeHelperPreferenceKey] = TimeMapper.TimeHelperPreferencesConverter.serialize(time)
         }
     }
 
-    suspend fun updateTimeIncrement(increment: TimeHelper) {
+    suspend fun updateTimeIncrement(increment: TimeMapper) {
         dataStore.edit { preferences ->
-            preferences[PreferenceKeys.timeIncrementPreferenceKey] = TimeHelper.TimeHelperPreferencesConverter.serialize(increment)
+            preferences[PreferenceKeys.timeIncrementPreferenceKey] = TimeMapper.TimeHelperPreferencesConverter.serialize(increment)
         }
     }
 
