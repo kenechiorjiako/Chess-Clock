@@ -118,9 +118,9 @@ class HomeFragment : MviFragment<ViewState, ViewEffect, ViewNavigation, Event, P
     override fun renderViewState(viewState: ViewState) {
         binding.apply {
 
-            val gameActive = !viewState.clockActive || viewState.gameOver()
-            refreshButton.isClickable = gameActive
-            settingsButton.isClickable = gameActive
+            val gameInactive = !viewState.clockActive || viewState.gameOver()
+            refreshButton.isClickable = gameInactive
+            settingsButton.isClickable = gameInactive
 
             if (viewState.clockActive) {
                 clockActivityDimmer.visibility = GONE
@@ -138,11 +138,13 @@ class HomeFragment : MviFragment<ViewState, ViewEffect, ViewNavigation, Event, P
                     pauseButton.alpha = 1f
                     pauseButton.isClickable = true
                 }
+
             } else {
                 clockActivityDimmer.visibility = VISIBLE
                 pauseButton.visibility = GONE
                 playButton.visibility = VISIBLE
                 playButton.isClickable = viewState.activePlayer != NO_PLAYER
+
                 if (viewState.activePlayer == NO_PLAYER) {
                     playButton.alpha = 0.5f
                 } else {
@@ -243,7 +245,6 @@ class HomeFragment : MviFragment<ViewState, ViewEffect, ViewNavigation, Event, P
         val bottomSheetFragment = SettingsBottomSheetFragment()
         bottomSheetFragment.arguments = outBundle
         bottomSheetFragment.show(childFragmentManager, bottomSheetFragment.tag)
-
     }
 
     override fun dispatchLoadPageEvent() {

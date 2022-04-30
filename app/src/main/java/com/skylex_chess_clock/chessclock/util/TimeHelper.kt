@@ -5,6 +5,7 @@ import com.f2prateek.rx.preferences2.Preference
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.android.parcel.Parcelize
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 @Parcelize
