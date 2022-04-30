@@ -55,6 +55,7 @@ class HomeFragment : MviFragment<ViewState, ViewEffect, ViewNavigation, Event, P
         observeFragmentResults()
 
         if (savedInstanceState == null) {
+            viewModel.init()
             startEnterTransition()
         }
 
@@ -117,13 +118,15 @@ class HomeFragment : MviFragment<ViewState, ViewEffect, ViewNavigation, Event, P
     override fun renderViewState(viewState: ViewState) {
         binding.apply {
 
-            refreshButton.isClickable = !viewState.clockActive || viewState.gameOver()
-            settingsButton.isClickable = !viewState.clockActive || viewState.gameOver()
+            val gameActive = !viewState.clockActive || viewState.gameOver()
+            refreshButton.isClickable = gameActive
+            settingsButton.isClickable = gameActive
 
             if (viewState.clockActive) {
                 clockActivityDimmer.visibility = GONE
                 pauseButton.visibility = VISIBLE
                 playButton.visibility = GONE
+
                 if (viewState.gameOver()) {
                     refreshButton.alpha = 1f
                     settingsButton.alpha = 1f
