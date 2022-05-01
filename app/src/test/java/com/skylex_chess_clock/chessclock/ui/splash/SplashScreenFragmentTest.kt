@@ -49,14 +49,21 @@ class SplashScreenFragmentTest {
         val testScheduler = TestScheduler()
         RxJavaPlugins.setComputationSchedulerHandler { testScheduler }
 
-        launch(sut) {
-            val testNavController = TestNavHostController(it)
-            testNavController.setGraph(R.navigation.main_navigation_graph)
-            Navigation.setViewNavController(sut.requireView(), testNavController)
+        launch {
+            val testNavHostController = TestNavHostController(it)
+            testNavHostController.setGraph(R.navigation.main_navigation_graph)
+
+            sut.also {
+                sut.viewLifecycleOwnerLiveData.observeForever {
+                    Navigation.setViewNavController(sut.requireView(), testNavHostController)
+                }
+            }
+
+            it.setFragment(sut)
 
             testScheduler.advanceTimeBy(10, TimeUnit.SECONDS)
-            assertNotNull(testNavController.currentDestination)
-            assertEquals(R.id.homeFragment, testNavController.currentDestination?.id)
+            assertNotNull(testNavHostController.currentDestination)
+            assertEquals(R.id.homeFragment, testNavHostController.currentDestination?.id)
         }
     }
 }

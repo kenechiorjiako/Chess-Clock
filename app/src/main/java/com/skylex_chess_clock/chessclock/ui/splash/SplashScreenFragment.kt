@@ -22,7 +22,7 @@ class SplashScreenFragment() : MviFragment<Any, ViewEffect, ViewNavigation, Even
 
     lateinit var binding: FragmentSplashScreenBinding
     override val viewModel: SplashScreenVM by viewModels()
-//    lateinit var navController: NavController
+    lateinit var navController: NavController
     private val animationUtil: AnimationUtil = AnimationUtil()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -33,7 +33,7 @@ class SplashScreenFragment() : MviFragment<Any, ViewEffect, ViewNavigation, Even
 
 
     override fun setupViewHelperObjects() {
-//        navController = NavHostFragment.findNavController(this)
+        navController = NavHostFragment.findNavController(this)
     }
     override fun setupViews() {
     }
@@ -68,7 +68,7 @@ class SplashScreenFragment() : MviFragment<Any, ViewEffect, ViewNavigation, Even
                 .setEnterAnim(android.R.anim.fade_in)
                 .setExitAnim(android.R.anim.fade_out)
                 .build()
-        NavHostFragment.findNavController(this).navigate(pageId, null, navOptions)
+        navController.navigate(pageId, null, navOptions)
     }
 
 
